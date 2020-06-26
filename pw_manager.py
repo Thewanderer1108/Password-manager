@@ -270,6 +270,7 @@ def pw_operations(au_id):
                 6.View All Account Types""")
     while True:
         option = input(">> ")
+        console_clear()
         print()
         if option == "1":
             save_password(au_id)
@@ -396,7 +397,46 @@ def create_account():
         if c_con.is_connected():
             c_con.close()
 
+            
+def change_password():
+    c_con = connection()
+    try:
+        while True:
+            print()
+            user_id = input("Enter User ID: ")
+            u_old_password = getpass.getpass("Enter old password: ")
+            select_query = "select U_ID, u_password from users where U_ID = %s and u_password = %s"
+            select_cursor = c_con.cursor()
+            select_cursor.execute(select_query, (user_id, u_old_password))
+            found = select_cursor.fetchone()
+            select_cursor.close()
+            if found:
+                while True:
+                    new_password = getpass.getpass("Enter new password: ")
+                    if len(new_password) >= 8:
+                        update_query = "update users set u_password = %s where U_ID = %s"
+                        update_cursor = c_con.cursor()
+                        update_cursor.execute(update_query, (new_password, user_id))
+                        c_con.commit()
+                        print("{} password changed successfully.".format(update_cursor.rowcount))
+                        update_cursor.close()
+                        login()
+                    else:
+                        print("Password length should be greater than 8 characters.")
+                        print("Please enter a different password.")
+                        print()
+            else:
+                print("Invalid User ID or Password!!")
+                print("Please try again.")
+                print()
+                console_clear()
+    except mysql.connector.Error as error:
+        print("Problem saving record, {}".format(error))
+    finally:
+        if c_con.is_connected():
+            c_con.close()
 
+            
 def main():
     """
     This is the main function that is responsible for execution of all the function in this program.
@@ -414,6 +454,8 @@ def main():
             create_account()
         elif choice == "2":
             login()
+        elif choice == "3":
+            change_password()
         elif choice == "exit" or choice == "EXIT":
             sys.exit()  # this exit the program
         else:
