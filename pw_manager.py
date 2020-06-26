@@ -23,7 +23,7 @@ def connection():
 
 def save_password(acc_id):
     """
-        This function is used to save passwords into the database.
+    This function is used to save passwords into the database.
 
     :parameter
         n, acc_type, u_id, pw, these are variables that this functions uses to accordingly
@@ -56,6 +56,10 @@ def save_password(acc_id):
         insert_cursor.execute(insert_query, (n, acc_type, u_id, pw, cr, ch, acc_id))
         s_con.commit()
         print("{} record added successfully".format(insert_cursor.rowcount))
+        print()
+        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
+              "\n6.View All Account Types")
+        print()
         print("Select option above to continue(or type exit to quit)")
         insert_cursor.close()
     except mysql.connector.Error as error:
@@ -95,6 +99,10 @@ def update_password(acc_id):
         update_cursor.execute(update_query, (new_pw, ch_dt, user_name, acc_type, acc_id))
         u_con.commit()      # this commits the changes in the database
         print("{} account password successfully changed".format(update_cursor.rowcount))
+        print()
+        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
+              "\n6.View All Account Types")
+        print()
         print("Select options to continue or type exit to quit")
         update_cursor.close()
     except mysql.connector.Error as error:
@@ -135,10 +143,18 @@ def delete_account(acc_id):
             delete_cursor.execute(delete_query, (acc_type, pw, acc_id))
             d_con.commit()      # this commits the changes in the database
             print("{} record deleted successfully".format(delete_cursor.rowcount))
+            print()
+            print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
+                  "\n5.View All Password\n6.View All Account Types")
+            print()
             print("Select options to continue or type exit to quit")
             delete_cursor.close()
         else:
             print("No changes made, no account deleted")
+            print()
+            print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
+                  "\n5.View All Password\n6.View All Account Types")
+            print()
             print("Select options to continue or type exit to quit")
     except mysql.connector.Error as error:
         print("Problem deleting record, {}".format(error))
@@ -177,6 +193,9 @@ def view_password(acc_id):
             print()
         select_cursor.close()
         print()
+        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
+              "\n6.View All Account Types")
+        print()
         print("Select options to continue or type exit to quit")
     except mysql.connector.Error as error:
         print("Problem retrieving record, {}".format(error))
@@ -188,8 +207,8 @@ def view_password(acc_id):
 
 def view_all_passwords(acc_id):
     """
-        This function simply prints out all the account passwords from the database to the console in a
-        table user friendly way.
+    This function simply prints out all the account passwords from the database to the console in a
+    table user friendly way.
 
         The acc_id here is a variable that stores the id of the user logged in so that the
         program remembers the user throughout the entire operation of the program.
@@ -199,7 +218,7 @@ def view_all_passwords(acc_id):
     """
     v1_con = connection()
     try:
-        select_query = "select name, account_type, passwrd, creation_date, change_date, U_ID from info where U_ID = %s "
+        select_query = "select name, account_type, passwrd, creation_date, change_date, U_ID from info where U_ID = %s"
         select_cursor = v1_con.cursor()
         select_cursor.execute(select_query, (acc_id,))    # the cursor takes in value in the form of a tuple
         # hence, we have a comma(,) after the acc_id variable
@@ -210,6 +229,9 @@ def view_all_passwords(acc_id):
 
         select_cursor.close()
         # print("*\t" * 19)
+        print()
+        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
+              "\n6.View All Account Types")
         print()
         print("Select options to continue or type exit to quit")
     except mysql.connector.Error as error:
@@ -242,6 +264,9 @@ def view_all_accounts(acc_id):
             print("{}. {}".format(count, *account_type))    # the *(asterisk) is used to unpacked the tuple that is
             count += 1                                      # returned by the select_cursor.
         select_cursor.close()
+        print()
+        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
+              "\n6.View All Account Types")
         print()
         print("Select options to continue or type exit to quit")
     except mysql.connector.Error as error:
@@ -397,8 +422,11 @@ def create_account():
         if c_con.is_connected():
             c_con.close()
 
-            
+
 def change_password():
+    """
+    This function is basically to allow users change the password of their account.
+    """
     c_con = connection()
     try:
         while True:
@@ -436,7 +464,7 @@ def change_password():
         if c_con.is_connected():
             c_con.close()
 
-            
+
 def main():
     """
     This is the main function that is responsible for execution of all the function in this program.
@@ -446,7 +474,8 @@ def main():
 
     print("Please select option below that suits you(or type exit to quit): ")
     print("""\t\t1.Create Account
-                2.Login""")
+                2.Login
+                3.Change Password""")
     while True:
         choice = input(">> ")
         console_clear()
