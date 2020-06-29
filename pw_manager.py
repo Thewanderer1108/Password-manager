@@ -89,22 +89,36 @@ def update_password(acc_id):
     """
     u_con = connection()
     try:
-        acc_type = input("Enter Account type for which password needs to be changed: ")
-        user_name = input("Enter Account user ID: ")
-        new_pw = getpass.getpass("Enter new password: ")
-        ch_dt = current_time()
-        update_query = "update info set passwrd = %s, change_date = %s where user_ID = %s and account_type = %s and " \
-                       "U_ID = %s"
-        update_cursor = u_con.cursor()
-        update_cursor.execute(update_query, (new_pw, ch_dt, user_name, acc_type, acc_id))
-        u_con.commit()      # this commits the changes in the database
-        print("{} account password successfully changed".format(update_cursor.rowcount))
-        print()
-        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
-              "\n6.View All Account Types")
-        print()
-        print("Select options to continue or type exit to quit")
-        update_cursor.close()
+        while True:
+            print()
+            acc_type = input("Enter Account type for which password needs to be changed: ")
+            select_query = "select account_type from info where account_type = %s"
+            select_cursor = u_con.cursor()
+            select_cursor.execute(select_query, (acc_type,))
+            a_type_found = select_cursor.fetchone()
+            if a_type_found:
+                try:
+                    user_name = input("Enter Account user ID: ")
+                    new_pw = getpass.getpass("Enter new password: ")
+                    ch_dt = current_time()
+                    update_query = "update info set passwrd = %s, change_date = %s where user_ID = %s " \
+                                   "and account_type = %s and U_ID = %s"
+                    update_cursor = u_con.cursor()
+                    update_cursor.execute(update_query, (new_pw, ch_dt, user_name, acc_type, acc_id))
+                    u_con.commit()      # this commits the changes in the database
+                    print("{} account password successfully changed".format(update_cursor.rowcount))
+                    print()
+                    print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
+                          "\n5.View All Password\n6.View All Account Types")
+                    print()
+                    print("Select options to continue or type exit to quit")
+                    update_cursor.close()
+                    break
+                except mysql.connector.Error as error:
+                    print("Problem updating record, {}".format(error))
+            else:
+                print("Account does not exist. Please try again.")
+                print()
     except mysql.connector.Error as error:
         print("Problem saving record, {}".format(error))
         u_con.rollback()
@@ -134,28 +148,43 @@ def delete_account(acc_id):
     """
     d_con = connection()
     try:
-        acc_type = input("Enter account type: ")
-        pw = getpass.getpass("Enter account password: ")
-        answer = input("Are you sure you want to delete the account(y/n): ")
-        if answer == 'y' or answer == 'Y':
-            delete_query = 'delete from info where account_type = %s and passwrd = %s and U_ID = %s'
-            delete_cursor = d_con.cursor()
-            delete_cursor.execute(delete_query, (acc_type, pw, acc_id))
-            d_con.commit()      # this commits the changes in the database
-            print("{} record deleted successfully".format(delete_cursor.rowcount))
+        while True:
             print()
-            print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
-                  "\n5.View All Password\n6.View All Account Types")
-            print()
-            print("Select options to continue or type exit to quit")
-            delete_cursor.close()
-        else:
-            print("No changes made, no account deleted")
-            print()
-            print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
-                  "\n5.View All Password\n6.View All Account Types")
-            print()
-            print("Select options to continue or type exit to quit")
+            acc_type = input("Enter account type: ")
+            pw = getpass.getpass("Enter account password: ")
+            select_query = "select account_type, passwrd from info where account_type = %s and passwrd = %s"
+            select_cursor = d_con.cursor()
+            select_cursor.execute(select_query, (acc_type, pw))
+            found = select_cursor.fetchone()
+            select_cursor.close()
+            if found:
+                try:
+                    answer = input("Are you sure you want to delete the account(y/n): ")
+                    if answer == 'y' or answer == 'Y':
+                        delete_query = 'delete from info where account_type = %s and passwrd = %s and U_ID = %s'
+                        delete_cursor = d_con.cursor()
+                        delete_cursor.execute(delete_query, (acc_type, pw, acc_id))
+                        d_con.commit()      # this commits the changes in the database
+                        print("{} record deleted successfully".format(delete_cursor.rowcount))
+                        print()
+                        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
+                              "\n5.View All Password\n6.View All Account Types")
+                        print()
+                        print("Select options to continue or type exit to quit")
+                        delete_cursor.close()
+                        break
+                    else:
+                        print("No changes made, no account deleted")
+                        print()
+                        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
+                              "\n5.View All Password\n6.View All Account Types")
+                        print()
+                        print("Select options to continue or type exit to quit")
+                except mysql.connector.Error as error:
+                    print(error)
+            else:
+                print("Account does not exist. Please try again.")
+                print()
     except mysql.connector.Error as error:
         print("Problem deleting record, {}".format(error))
         d_con.rollback()
@@ -187,14 +216,14 @@ def view_password(acc_id):
         select_cursor = v_con.cursor()
         select_cursor.execute(select_query, (a_type, acc_id))
         for name, account_type, user_ID, passwrd in select_cursor:
-            print("\t Name: {}\n\t Account: {} \n\t User ID: {} \n\t Password: {}".format(name, account_type, user_ID,
-                                                                                          passwrd))
+            print("\t Name: {}\n\t Account: {} \n\t User ID: {} \n\t Password: {}".format(name, account_type,
+                                                                                          user_ID, passwrd))
             # print("\t *" * 11)
             print()
         select_cursor.close()
         print()
-        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password\n5.View All Password"
-              "\n6.View All Account Types")
+        print("Options\n1.Save Password\n2.Update Password\n3.Delete Password\n4.View Password"
+              "\n5.View All Password\n6.View All Account Types")
         print()
         print("Select options to continue or type exit to quit")
     except mysql.connector.Error as error:
@@ -388,7 +417,7 @@ def create_account():
         u_name = input("Enter User ID(must contain at least 1 number) : ")
         pw = getpass.getpass("Enter Password: ")
         con_pw = getpass.getpass("Re-enter password: ")
-        if con_pw == pw:
+        if con_pw == pw and len(con_pw) >= 8:
             insert_query = 'insert into users(U_ID, u_password) values(%s, %s)'
             insert_cursor = c_con.cursor()
             insert_cursor.execute(insert_query, (u_name, pw))
@@ -401,7 +430,7 @@ def create_account():
             try:
                 print("Password do not match!")
                 con_pw = getpass.getpass("Please enter the password again: ")
-                if con_pw == pw:
+                if con_pw == pw and len(con_pw) >= 8:
                     insert_query = 'insert into users(U_ID, psswrd) values(%s, %s)'
                     insert_cursor = c_con.cursor()
                     insert_cursor.execute(insert_query, (u_name, pw))
@@ -449,6 +478,7 @@ def change_password():
                         print("{} password changed successfully.".format(update_cursor.rowcount))
                         update_cursor.close()
                         login()
+                        break
                     else:
                         print("Password length should be greater than 8 characters.")
                         print("Please enter a different password.")
